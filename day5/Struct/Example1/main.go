@@ -1,4 +1,4 @@
-package main
+package Example1
 
 //定义构造体
 type user struct {
