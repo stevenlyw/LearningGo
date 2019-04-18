@@ -20,7 +20,6 @@ type interface3 interface {
 }
 
 type struct1 struct {
-
 }
 
 func (struct1) aaa() {
@@ -36,14 +35,12 @@ func (struct1) ccc() {
 }
 
 func main() {
-	aa:= new(struct1)
+	aa := new(struct1)
 	//因为struct1实现了interface3的所有方法,所以可以这样调用
 	Test(aa)
 }
 
-func Test(rw interface3)  {
+func Test(rw interface3) {
 	rw.aaa()
 	rw.bbb()
 }
-
-
