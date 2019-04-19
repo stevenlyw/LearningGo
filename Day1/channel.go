@@ -1,4 +1,4 @@
-package day1
+package main
 
 /*func main()  {
 	channel := make(chan int, 3)

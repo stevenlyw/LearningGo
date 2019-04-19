@@ -2,32 +2,42 @@ package main
 
 import (
 	"LearningGo/go_pass_sdk/Kernel"
-	"io/ioutil"
-	"log"
-	"net/http"
 	"fmt"
 )
-//import "LearningGo/go_pass_sdk/Kernel"
+
+type UploadStateResponse struct {
+	Message string
+	Data    map[string]interface{}
+	Code    int
+}
 
 func main() {
-	//fmt.Println(kernel.GetLicenseId())
-	//kernel.DownloadUrl("b6f62afa966348038d0622cd656c66ce")
-	var licenseId = kernel.GetLicenseId()
-	client := &http.Client{}
+	//var licenseId = kernel.GetLicenseId()
+	result := kernel.DownloadUrl("e3a790bfe3734719881a443a293cfdab",0)
 
-	request, _ := http.NewRequest("GET", "http://209.sgld.org:10001", nil)
-	request.Header.Set("User-Action", "PC://f286980ad1ae763bc5f0e0596959da03:"+licenseId+"@cn.primecloud.paas.windowsdemo/Resource/GetDownloadUrl?FID=b6f62afa966348038d0622cd656c66ce")
-	request.Header.Set("Referer", "http://209.sgld.org")
-
-	response, err := client.Do(request)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-
-	bytes, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(string(bytes))
+	//md5 := ""
+	//filename := ""
+	//client := &http.Client{}
+	//
+	//request, _ := http.NewRequest("GET", "http://214.sgld.org:13232", nil)
+	//request.Header.Set("User-Action", "PC://f286980ad1ae763bc5f0e0596959da03:"+licenseId+"@cn.primecloud.paas.windowsdemo/Resource/GetUploadState??md5="+md5+"&filename="+filename+"&directory=/")
+	//request.Header.Set("Referer", "http://214.sgld.org")
+	//
+	//response, err := client.Do(request)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//bytes, err := ioutil.ReadAll(response.Body)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//responseData := &UploadStateResponse{}
+	//
+	//err = json.Unmarshal(bytes, responseData)
+	//if responseData.Code == 404 {
+	//	log.Fatal(responseData.Message)
+	//}
+	//fmt.Println(string(bytes))
 }

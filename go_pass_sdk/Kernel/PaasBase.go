@@ -3,45 +3,54 @@ package kernel
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
-type PaasResponse struct {
+type GetLicenseIdResponse struct {
 	Code    int               `json:"code"`
 	Data    map[string]string `json:"data"`
 	Message string            `json:"message"`
 	Version int               `json:"version"`
 }
 
-func GetLicenseId() string {
+func GetLicenseId() (responseData map[string]interface{}) {
 	client := &http.Client{}
 
-	request, _ := http.NewRequest("GET", "http://209.sgld.org:10001", nil)
+	request, _ := http.NewRequest("GET", "http://214.sgld.org:13232", nil)
 	request.Header.Set("User-Action", "PC://f286980ad1ae763bc5f0e0596959da03@cn.primecloud.paas.windowsdemo/user/UserApplyLicense")
-	request.Header.Set("Referer", "http://209.sgld.org")
+	request.Header.Set("Referer", "http://214.sgld.org")
 
+	responseData = make(map[string]interface{})
 	response, err := client.Do(request)
 	if err != nil {
-		log.Fatal(err)
+		responseData["code"] = 500
+		responseData["message"] = "信息读取失败"
+		return
 	}
 
 	bytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		log.Fatal(err)
+		responseData["code"] = 500
+		responseData["message"] = "信息读取失败"
+		return
 	}
 
-	responseData := &PaasResponse{}
+	passResponseData := &GetLicenseIdResponse{}
 	err = json.Unmarshal(bytes, responseData)
 	if err != nil {
-		log.Fatal(err)
+		responseData["code"] = 500
+		responseData["message"] = "json解析失败"
+		return
 	}
-	if responseData.Code != 200 {
-		log.Fatal("状态码有误")
+	if passResponseData.Code != 200 {
+		responseData["code"] = 500
+		responseData["message"] = "状态码有误"
+		return
 	}
 
-	LicenseId := responseData.Data["License"]
-	return LicenseId
+	responseData["code"] = 0
+	responseData["data"] = passResponseData.Data["License"]
+	return responseData
 }
 
 

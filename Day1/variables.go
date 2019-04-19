@@ -1,7 +1,7 @@
 // 在 Go 中，_变量_ 被显式声明，并被编译器所用来
 // 检查函数调用时的类型正确性
 
-package day1
+package main
 
 import "fmt"
 

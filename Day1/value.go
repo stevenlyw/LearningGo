@@ -1,7 +1,7 @@
 // Go 拥有各值类型，包括字符串，整形，浮点型，布尔
 // 型等。下面是一些基本的例子。
 
-package day1
+package main
 
 import "fmt"
 
