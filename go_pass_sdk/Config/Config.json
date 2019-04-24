@@ -1,0 +1,10 @@
+{
+  "passInfo": {
+    "host": "http://214.sgld.org",
+    "appId": "f286980ad1ae763bc5f0e0596959da03",
+    "port": 13232
+  },
+  "cacheConfig": {
+    "cacheType": "redis"
+  }
+}
