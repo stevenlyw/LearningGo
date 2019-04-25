@@ -24,14 +24,29 @@ type GetLicenseIdResponse struct {
 	Version int               `json:"version"`
 }
 
-func GetLicenseId() (responseData map[string]interface{}) {
+type Pass struct {
+	Host string
+	AppId string
+	Port string
+	Request http.Request
+}
+
+func Construct(host ,appId ,port string) *Pass{
+	request, _ := http.NewRequest("GET", host+":"+port, nil)
+	request.Header.Set("Referer", host)
+	return &Pass{
+		Host:host,
+		AppId:appId,
+		Port:port,
+		Request:*request,
+	}
+}
+
+//获取授权Id
+func (c *Pass)GetLicenseId() (responseData map[string]interface{}) {
 	client := &http.Client{}
-
-	request, _ := http.NewRequest("GET", "http://214.sgld.org:13232", nil)
-	request.Header.Set("User-Action", "PC://f286980ad1ae763bc5f0e0596959da03@cn.primecloud.paas.windowsdemo"+Constant.USER_APPLY_LICENSE)
-	request.Header.Set("Referer", "http://214.sgld.org")
-
-	response, err := client.Do(request)
+	c.Request.Header.Set("User-Action", c.AppId+"@cn.primecloud.paas.windowsdemo"+Constant.USER_APPLY_LICENSE)
+	response, err := client.Do(&c.Request)
 	responseData = make(map[string]interface{})
 
 	if err != nil {
@@ -66,10 +81,10 @@ func GetLicenseId() (responseData map[string]interface{}) {
 	return responseData
 }
 
-
-func DownloadUrl(fileId string, retry bool) (responseData map[string]interface{}) {
+//获取资源下载链接
+func (c *Pass)DownloadUrl(fileId string, retry bool) (responseData map[string]interface{}) {
 	responseData = make(map[string]interface{})
-	getLicenseData := GetLicenseId()
+	getLicenseData := c.GetLicenseId()
 	if getLicenseData["code"] != 0 {
 		responseData["code"] = 500
 		responseData["message"] = "获取licenseId失败"
@@ -78,9 +93,9 @@ func DownloadUrl(fileId string, retry bool) (responseData map[string]interface{}
 	licenseId := getLicenseData["data"].(string)
 	client := &http.Client{}
 
-	request, _ := http.NewRequest("GET", "http://214.sgld.org:13232", nil)
-	request.Header.Set("User-Action", "PC://f286980ad1ae763bc5f0e0596959da03:"+licenseId+"@cn.primecloud.paas.windowsdemo"+Constant.GET_DOWNLOAD_URL+"?FID="+fileId)
-	request.Header.Set("Referer", "http://214.sgld.org")
+	request, _ := http.NewRequest("GET", c.Host+":"+c.Port, nil)
+	request.Header.Set("User-Action", c.AppId+":"+licenseId+"@cn.primecloud.paas.windowsdemo"+Constant.GET_DOWNLOAD_URL+"?FID="+fileId)
+	request.Header.Set("Referer", c.Host)
 
 	response, err := client.Do(request)
 	if err != nil {
@@ -91,24 +106,21 @@ func DownloadUrl(fileId string, retry bool) (responseData map[string]interface{}
 	return passResponseDataHandle(response.Body)
 }
 
-func Transformation(fileId, convertType string, videoType string, retry bool) (responseData map[string]interface{}) {
+//资源转换
+func (c *Pass)Transformation(fileId, convertType string, videoType string, retry bool) (responseData map[string]interface{}) {
 	responseData = make(map[string]interface{})
-	getLicenseData := GetLicenseId()
+	getLicenseData := c.GetLicenseId()
 	if getLicenseData["code"] != 0 {
 		responseData["code"] = 500
 		responseData["message"] = "获取licenseId失败"
 		return
 	}
 	licenseId := getLicenseData["data"].(string)
-	convertType = "0"
-	videoType = "0"
 	randomString := fmt.Sprintf("%x",time.Now().UnixNano())
 	url := "?fileid="+fileId+"&ConverType="+convertType+"&VideoType="+videoType+"&random="+randomString
-	request, _ := http.NewRequest("GET", "http://214.sgld.org:13232", nil)
-	request.Header.Set("User-Action", "PC://f286980ad1ae763bc5f0e0596959da03:"+licenseId+"@cn.primecloud.paas.windowsdemo"+Constant.CONVERT+url)
-	request.Header.Set("Referer", "http://214.sgld.org")
+	c.Request.Header.Set("User-Action", c.AppId+":"+licenseId+"@cn.primecloud.paas.windowsdemo"+Constant.CONVERT+url)
 	client := &http.Client{}
-	response, err := client.Do(request)
+	response, err := client.Do(&c.Request)
 	if err != nil {
 		responseData["code"] = 500
 		responseData["message"] = "信息读取失败"
@@ -118,9 +130,10 @@ func Transformation(fileId, convertType string, videoType string, retry bool) (r
 	return passResponseDataHandle(response.Body)
 }
 
-func OnlineUrl(fileId,hostUrl string, retry bool) (responseData map[string]interface{}) {
+//获取在线播放地址
+func (c *Pass)OnlineUrl(fileId,hostUrl string, retry bool) (responseData map[string]interface{}) {
 	responseData = make(map[string]interface{})
-	getLicenseData := GetLicenseId()
+	getLicenseData := c.GetLicenseId()
 	if getLicenseData["code"] != 0 {
 		responseData["code"] = 500
 		responseData["message"] = "获取licenseId失败"
@@ -134,11 +147,8 @@ func OnlineUrl(fileId,hostUrl string, retry bool) (responseData map[string]inter
 	if hostUrl != "" {
 		url = url+"&host"+hostUrl
 	}
-	request, _ := http.NewRequest("GET", "http://214.sgld.org:13232", nil)
-	request.Header.Set("User-Action", "PC://f286980ad1ae763bc5f0e0596959da03:"+licenseId+"@cn.primecloud.paas.windowsdemo"+Constant.GET_ONLINEPLAY_URL+url)
-	request.Header.Set("Referer", "http://214.sgld.org")
-
-	response, err := client.Do(request)
+	c.Request.Header.Set("User-Action", c.AppId+":"+licenseId+"@cn.primecloud.paas.windowsdemo"+Constant.GET_ONLINEPLAY_URL+url)
+	response, err := client.Do(&c.Request)
 	if err != nil {
 		responseData["code"] = 500
 		responseData["message"] = "信息读取失败"
@@ -148,9 +158,10 @@ func OnlineUrl(fileId,hostUrl string, retry bool) (responseData map[string]inter
 	return passResponseDataHandle(response.Body)
 }
 
-func GetFileInfo(fileId string,retry bool) (responseData map[string]interface{}) {
+//获取文件信息
+func (c *Pass)GetFileInfo(fileId string,retry bool) (responseData map[string]interface{}) {
 	responseData = make(map[string]interface{})
-	getLicenseData := GetLicenseId()
+	getLicenseData := c.GetLicenseId()
 	if getLicenseData["code"] != 0 {
 		responseData["code"] = 500
 		responseData["message"] = "获取licenseId失败"
@@ -162,11 +173,9 @@ func GetFileInfo(fileId string,retry bool) (responseData map[string]interface{})
 
 	url := "?FID="+fileId
 
-	request, _ := http.NewRequest("GET", "http://214.sgld.org:13232", nil)
-	request.Header.Set("User-Action", "PC://f286980ad1ae763bc5f0e0596959da03:"+licenseId+"@cn.primecloud.paas.windowsdemo"+Constant.GET_FILE_INFO+url)
-	request.Header.Set("Referer", "http://214.sgld.org")
+	c.Request.Header.Set("User-Action", c.AppId+":"+licenseId+"@cn.primecloud.paas.windowsdemo"+Constant.GET_FILE_INFO+url)
 
-	response, err := client.Do(request)
+	response, err := client.Do(&c.Request)
 	if err != nil {
 		responseData["code"] = 500
 		responseData["message"] = "信息读取失败"
@@ -194,13 +203,9 @@ func passResponseDataHandle(responseBody io.Reader) (responseData map[string]int
 		responseData["code"] = 0
 		responseData["data"] = passResponseData.Data
 		return
-	case 404:
-		responseData["code"] = 404
-		responseData["message"] = "fileID不存在"
-		return
 	default:
-		responseData["code"] = 500
-		responseData["message"] = "获取下载地址失败"
+		responseData["code"] = passResponseData.Code
+		responseData["message"] = passResponseData.Message
 		return
 	}
 }
